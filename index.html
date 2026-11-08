@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Chōkai</title>
+<meta name="theme-color" content="#27408b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<!--CSS--><link rel="stylesheet" href="app.css"><!--/CSS-->
+</head>
+<body>
+<audio id="au" preload="auto"></audio>
+<div class="app">
+
+<!-- Thư viện đề -->
+<section id="home">
+  <header class="hero">
+    <div>
+      <h1>Chōkai</h1>
+      <p>Luyện nghe JLPT từng câu, hoặc thi thử một mạch như đề thật.</p>
+    </div>
+    <div class="hero-k" aria-hidden="true">聴解</div>
+  </header>
+  <div class="sec-h"><h2>Đề của bạn</h2><button class="btn pri" id="addBtn" type="button">Thêm đề</button></div>
+  <div class="exams" id="examList"></div>
+  <p class="note">Đề thêm vào được lưu ngay trong thiết bị này, nghe được khi không có mạng.</p>
+</section>
+
+<!-- Màn luyện tập -->
+<section id="exam" hidden>
+  <div class="topbar">
+    <button class="btn" id="backBtn" type="button" aria-label="Về danh sách đề">‹ Đề</button>
+    <div class="tb-t"><b id="exTitle"></b><span id="exSub"></span></div>
+    <span class="chip" id="scoreChip" hidden></span>
+  </div>
+  <div class="split">
+    <aside class="side">
+      <nav class="qnav" id="qnav" aria-label="Danh sách câu"></nav>
+      <div class="tools">
+        <button class="btn pri" id="te" type="button">Thi thử</button>
+        <button class="btn" id="rv" type="button">Ôn lại câu sai</button>
+        <button class="btn ghost" id="rt" type="button">Làm lại từ đầu</button>
+        <p class="score" id="score"></p>
+        <p class="rvn" id="rvn"></p>
+      </div>
+    </aside>
+
+    <main class="card" id="main">
+      <div id="practice">
+        <div class="q-h"><h2 id="ttl"></h2><p id="tag"></p></div>
+
+        <div class="slab">
+          <p class="loading" id="loading" hidden>Đang tải audio…</p>
+          <div class="wave" id="wave" role="slider" tabindex="0" aria-label="Vị trí trong câu" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+          <div class="tm"><span id="t0">0:00</span><span id="t1">0:00</span></div>
+          <div class="ctl">
+            <button class="rb" id="rw" type="button" aria-label="Lùi 5 giây">−5 giây</button>
+            <button class="play" id="pl" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path id="pi" d="M7 4.5v15l13-7.5z"/></svg><span id="pt">Phát</span></button>
+            <button class="rb" id="rs" type="button" aria-label="Nghe lại từ đầu câu">Từ đầu</button>
+          </div>
+          <div class="spd" id="spd" role="group" aria-label="Tốc độ phát">
+            <button type="button" data-r="0.75" aria-pressed="false">0.75×</button>
+            <button type="button" data-r="1" aria-pressed="true">1×</button>
+            <button type="button" data-r="1.25" aria-pressed="false">1.25×</button>
+          </div>
+        </div>
+
+        <div class="qimg" id="qimg" hidden></div>
+        <div class="chs" id="chs"></div>
+        <div class="msg" id="msg" role="status"></div>
+        <div class="actions">
+          <button class="btn pri" id="ok" type="button">Xác nhận</button>
+          <button class="btn" id="nx" type="button">Câu tiếp</button>
+        </div>
+
+        <div class="tabs" id="tabs" role="group" aria-label="Giải thích">
+          <button type="button" data-t="s" aria-pressed="false">Script</button>
+          <button type="button" data-t="v" aria-pressed="false">Bản dịch</button>
+          <button type="button" data-t="w" aria-pressed="false">Từ vựng</button>
+        </div>
+        <div class="panel" id="panel" hidden></div>
+
+        <p class="hint keys">Phím tắt: 1–4 chọn đáp án, Enter xác nhận, Space phát hoặc dừng.</p>
+        <details>
+          <summary>Chỉnh mốc cắt của câu này</summary>
+          <div class="ed">
+            <label>Bắt đầu <input type="number" id="es" step="0.1" inputmode="decimal"></label><button class="btn sm" id="gs" type="button">Lấy vị trí hiện tại</button>
+            <label>Kết thúc <input type="number" id="ee" step="0.1" inputmode="decimal"></label><button class="btn sm" id="ge" type="button">Lấy vị trí hiện tại</button>
+            <button class="btn sm pri" id="sv" type="button">Lưu</button><button class="btn sm" id="rm" type="button">Về mặc định</button>
+          </div>
+          <p class="hint">Đơn vị là giây trong file audio gốc. Nghe thử, bấm “Lấy vị trí hiện tại” rồi Lưu nếu mốc bị lệch.</p>
+        </details>
+      </div>
+
+      <div id="mock" hidden></div>
+    </main>
+  </div>
+</section>
+</div>
+
+<!-- Thêm đề -->
+<dialog id="dlg" aria-labelledby="dlgT">
+  <div class="dlg">
+    <h2 id="dlgT">Thêm đề mới</h2>
+    <p>Chọn một lần tất cả file của đề. Có hai cách:</p>
+    <ol class="steps">
+      <li>File <b>.html</b> cùng kiểu với đề N3 2021/7 (đã gồm audio, hình, script).</li>
+      <li>File <b>.json</b> mô tả câu hỏi, kèm file <b>audio</b> (.mp3) và hình đáp án nếu có.</li>
+    </ol>
+    <label class="drop" id="drop">
+      <input type="file" id="fileIn" multiple accept=".html,.htm,.json,audio/*,image/*,.mp3,.m4a">
+      <b>Chọn file hoặc kéo thả vào đây</b>
+      <span class="hint" style="margin:0">.html, hoặc .json + .mp3 + hình</span>
+    </label>
+    <div class="log" id="log" aria-live="polite"></div>
+    <details style="margin:0">
+      <summary>Mẫu file .json</summary>
+      <pre class="tpl" id="tpl"></pre>
+      <p class="hint">s và e là giây bắt đầu, kết thúc của câu trong audio. a là số thứ tự đáp án đúng (bắt đầu từ 1). Đáp án là hình thì ghi <span class="jp">img:ten-file.jpg</span>. Phần đánh dấu trong script đặt giữa hai dấu ＊.</p>
+      <button class="btn sm" id="copyTpl" type="button" style="margin-top:8px">Sao chép mẫu</button>
+    </details>
+    <div class="dlg-f"><span></span><button class="btn" id="dlgClose" type="button">Đóng</button></div>
+  </div>
+</dialog>
+
+<!--JS--><script src="data/n3-2021-07.js"></script>
+<script src="data/n3-2018-07.js"></script>
+<script src="data/n3-2021-12.js"></script>
+<script src="data/n3-2018-12.js"></script>
+<script src="data/n3-2019-12.js"></script>
+<script src="data/n3-2020-12.js"></script>
+<script src="app.js"></script><!--/JS-->
+</body>
+</html>
